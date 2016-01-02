@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var nonFriendlyCharacters = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
@@ -23,30 +24,50 @@ func friendlyName(name string) string {
 }
 
 type fieldType struct {
-	Name       string
-	Expression *regexp.Regexp
+	Name string
+	Test func(string) bool
 }
 
 var types = []fieldType{
 	fieldType{
 		"timestamp",
-		regexp.MustCompile(`^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\d)$`),
-	},
-	fieldType{
-		"bigint",
-		regexp.MustCompile(`^\-?[1-9]\d{9,17}$`),
+		func (value string) bool {
+			_, err := time.Parse("01/02/2006", value)
+			if err == nil {
+				return true
+			}
+			
+			_, err = time.Parse(time.RFC3339, value)
+			return err == nil
+		},
 	},
 	fieldType{
 		"int",
-		regexp.MustCompile(`^((\-?[1-9]\d{0,8})|0)$`),
+		func (value string) bool {
+			_, err := strconv.ParseInt(value, 10, 32)
+			return err == nil
+		},
+	},
+	fieldType{
+		"bigint",
+		func (value string) bool {
+			_, err := strconv.ParseInt(value, 10, 64)
+			return err == nil
+		},
 	},
 	fieldType{
 		"decimal",
-		regexp.MustCompile(`^((\-?\d*(\.\d+)?)|0)$`),
+		func (value string) bool {
+			_, err := strconv.ParseFloat(value, 32)
+			return err == nil
+		},
 	},
 	fieldType{
 		"boolean",
-		regexp.MustCompile(`^(true|false|TRUE|FALSE|True|False)$`),
+		func (value string) bool {
+			_, err := strconv.ParseBool(value)
+			return err == nil
+		},
 	},
 }
 
@@ -110,13 +131,15 @@ func main() {
 			}
 
 			for {
-				if discoveredTypeIndexes[fieldIndex] == len(types) {
+				if discoveredTypeIndexes[fieldIndex] == len(types) || value == "" {
 					break
 				}
-				match := types[discoveredTypeIndexes[fieldIndex]].Expression.MatchString(value)
-				if match == true || value == "" {
+				
+				match := types[discoveredTypeIndexes[fieldIndex]].Test(value)
+				if match == true {
 					break
 				}
+				
 				discoveredTypeIndexes[fieldIndex] += 1
 			}
 		}
@@ -140,7 +163,7 @@ func main() {
 	fmt.Println("CREATE TABLE \"" + tablename + "\" (")
 	for i, field := range fields {
 		if field.FieldType == "character varying" {
-			fmt.Printf("  \"" + field.FieldName + "\" " + field.FieldType + " (" + strconv.Itoa(field.MaxLength*2) + ")")
+			fmt.Printf("  \"" + field.FieldName + "\" " + field.FieldType + " (" + strconv.Itoa(field.MaxLength) + ")")
 		} else {
 			fmt.Printf("  \"" + field.FieldName + "\" " + field.FieldType)
 		}
