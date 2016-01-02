@@ -41,7 +41,7 @@ var types = []fieldType{
 	},
 	fieldType{
 		"decimal",
-		regexp.MustCompile(`^((\-?\d*\.\d+)|0)$`),
+		regexp.MustCompile(`^((\-?\d*(\.\d+)?)|0)$`),
 	},
 	fieldType{
 		"boolean",
