@@ -1,5 +1,6 @@
 csvschema
 =========
+[![Build Status](https://travis-ci.org/bloomapi/csvschema.svg?branch=master)](https://travis-ci.org/bloomapi/csvschema)
 
 csvschema reads 100% of a csv file and generates a postgres schema based on
 the contents of the columns. The script expects a single header line as well
