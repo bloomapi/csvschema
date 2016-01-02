@@ -18,7 +18,7 @@ A Postgres `CREATE` command will be written to STDOUT
 Go must be installed.
 
 ```
-go install github.com/bloomapi/csvschema
+go get github.com/bloomapi/csvschema
 ```
 
 This will checkout csvschema and install it. If `$GOPATH/bin` is in your PATH,
