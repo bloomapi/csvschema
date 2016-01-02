@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -66,6 +67,10 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	_, filename := path.Split(os.Args[1])
+	fileParts := strings.Split(filename, ".")
+	tablename := strings.Join(fileParts[:len(fileParts)-1], ".")
 
 	csvReader := csv.NewReader(fileReader)
 	if err != nil {
@@ -132,12 +137,12 @@ func main() {
 		})
 	}
 
-	fmt.Println("CREATE TABLE sample (")
+	fmt.Println("CREATE TABLE \"" + tablename + "\" (")
 	for i, field := range fields {
 		if field.FieldType == "character varying" {
-			fmt.Printf("  " + field.FieldName + " " + field.FieldType + " (" + strconv.Itoa(field.MaxLength*2) + ")")
+			fmt.Printf("  \"" + field.FieldName + "\" " + field.FieldType + " (" + strconv.Itoa(field.MaxLength*2) + ")")
 		} else {
-			fmt.Printf("  " + field.FieldName + " " + field.FieldType)
+			fmt.Printf("  \"" + field.FieldName + "\" " + field.FieldType)
 		}
 
 		if i < len(fields)-1 {
