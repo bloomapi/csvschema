@@ -19,6 +19,12 @@ A Postgres `CREATE` command will be written to STDOUT
 
 ## Installation
 
+### Download
+
+Releases are available for download for many platforms at https://github.com/bloomapi/csvschema/releases
+
+### Build It
+
 Go must be installed.
 
 ```
